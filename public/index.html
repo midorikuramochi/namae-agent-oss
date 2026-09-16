@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ナマエ</title>
+<style>
+  :root{--bg:#f7f6f3;--card:#fff;--ink:#1a1917;--sub:#6d6862;--line:#e4e1db;
+    --accent:#3f5f8f;--soft:#eef2f8;--ok:#2f7d5d;--warn:#a8741c}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Hiragino Sans","Yu Gothic",system-ui,sans-serif;line-height:1.7}
+  header{padding:18px 28px;border-bottom:1px solid var(--line);background:#fff;
+    display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+  header h1{margin:0;font-size:20px;letter-spacing:.06em}
+  header .tag{font-size:12.5px;color:var(--sub)}
+  header .guard{margin-left:auto;font-size:11.5px;color:var(--warn);
+    background:#fdf6e8;border:1px solid #eedfbe;padding:4px 10px;border-radius:99px}
+  main{display:grid;grid-template-columns:400px 1fr;gap:24px;padding:22px 28px;
+    align-items:start;max-width:1440px}
+  @media(max-width:920px){main{grid-template-columns:1fr}}
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px}
+  .panel h2{margin:0 0 12px;font-size:12.5px;color:var(--sub);font-weight:600;letter-spacing:.08em}
+  textarea{width:100%;min-height:110px;padding:12px;border:1px solid var(--line);
+    border-radius:10px;font:inherit;font-size:14px;resize:vertical;background:#fdfdfc}
+  input[type=url]{width:100%;margin-top:10px;padding:10px 12px;border:1px solid var(--line);
+    border-radius:10px;font:inherit;font-size:13px;background:#fdfdfc}
+  textarea:focus,input:focus{outline:2px solid var(--soft);border-color:var(--accent)}
+  .attach{margin-top:11px;display:flex;gap:11px;align-items:center;flex-wrap:wrap}
+  .attach label{font-size:13px;border:1px dashed var(--line);border-radius:10px;
+    padding:9px 13px;cursor:pointer;color:var(--sub);background:#fdfdfc}
+  .attach label:hover{border-color:var(--accent);color:var(--accent)}
+  #thumb{width:52px;height:52px;object-fit:cover;border-radius:9px;display:none;border:1px solid var(--line)}
+  #fname{font-size:12px;color:var(--accent)}
+  button.send{margin-top:13px;width:100%;padding:12px;border:0;border-radius:10px;
+    background:var(--accent);color:#fff;font:inherit;font-weight:700;font-size:15px;cursor:pointer}
+  button.send:disabled{opacity:.45;cursor:default}
+  .hint{margin-top:9px;font-size:11.5px;color:var(--sub)}
+  .replay{display:flex;gap:7px;align-items:center;margin-top:10px;font-size:12px;color:var(--sub)}
+  .replaybar{margin:0 0 12px;padding:9px 12px;background:#fdf6e8;border:1px solid #eedfbe;
+    border-radius:9px;font-size:12.5px;color:#7a5510}
+  .ex{margin-top:13px;border-top:1px solid var(--line);padding-top:11px}
+  .ex b{font-size:11.5px;color:var(--sub);font-weight:600}
+  .ex button{display:block;width:100%;text-align:left;margin-top:7px;font:inherit;font-size:12.5px;
+    background:#fbfaf8;border:1px solid var(--line);border-radius:8px;padding:8px 10px;cursor:pointer;color:var(--ink)}
+  .ex button:hover{border-color:var(--accent)}
+
+  .trace{list-style:none;margin:0;padding:0}
+  .trace li{display:flex;gap:11px;padding:9px 0;border-bottom:1px dashed var(--line);font-size:13.5px}
+  .trace li:last-child{border-bottom:0}
+  .dot{flex:0 0 17px;height:17px;margin-top:4px;border-radius:50%;border:2px solid var(--line)}
+  .dot.run{border-color:var(--accent);border-top-color:transparent;animation:sp .8s linear infinite}
+  .dot.done{border-color:var(--ok);background:var(--ok);position:relative}
+  .dot.done::after{content:"";position:absolute;left:4.5px;top:1.5px;width:4px;height:8px;
+    border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .trace .txt{flex:1}
+  .trace .ms{font-size:11px;color:var(--sub);white-space:nowrap}
+  .trace .det{font-size:11.5px;color:var(--sub);margin-top:4px;white-space:pre-wrap}
+  .decision{margin:10px 0;padding:10px 12px;background:var(--soft);
+    border-left:3px solid var(--accent);border-radius:6px;font-size:13px}
+  .ask{margin:10px 0;padding:12px;background:#fdf6e8;border:1px solid #eedfbe;border-radius:10px;font-size:13.5px}
+  .err{background:#fdecea;border:1px solid #f3c2bc;color:#8a2b20;padding:12px;border-radius:10px;font-size:13px;margin-top:10px}
+
+  .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-top:16px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 17px 17px}
+  .rank{font-size:11px;color:var(--accent);font-weight:700;letter-spacing:.1em}
+  .card h3{margin:4px 0 2px;font-size:19px;line-height:1.35;letter-spacing:.02em}
+  .reading{font-size:11.5px;color:var(--sub)}
+  .oneline{font-size:13px;margin-top:9px}
+  .matches{font-size:12.5px;margin-top:9px;padding:9px 10px;background:var(--soft);border-radius:8px}
+  .matches b{font-size:10.5px;color:var(--accent);display:block;letter-spacing:.06em}
+  .concern{font-size:11.5px;color:var(--warn);margin-top:8px}
+  .terms{margin-top:10px;display:flex;gap:6px;flex-wrap:wrap}
+  .terms button{font:inherit;font-size:11.5px;border:1px solid var(--line);background:#fbfaf8;
+    border-radius:99px;padding:3px 10px;cursor:pointer;color:var(--ink)}
+  .terms button:hover{border-color:var(--accent);color:var(--accent)}
+  .links{margin-top:11px;border-top:1px solid var(--line);padding-top:9px;font-size:12.5px}
+  .links .l{display:block;margin-top:5px;color:var(--accent);text-decoration:none}
+  .links .l:hover{text-decoration:underline}
+  .links .k{display:inline-block;font-size:10px;color:#fff;background:var(--accent);
+    border-radius:4px;padding:0 5px;margin-right:6px;vertical-align:1px}
+  .audit{margin-top:16px;font-size:12.5px;color:var(--sub);background:#fbfaf8;
+    border:1px solid var(--line);border-radius:10px;padding:13px;white-space:pre-wrap}
+</style>
+</head>
+<body>
+<header>
+  <h1>ナマエ</h1>
+  <span class="tag">言葉にできない「好き」に、名前をつける</span>
+  <span class="guard">確信度と「外している可能性」を必ず併記します</span>
+</header>
+
+<main>
+  <section class="panel">
+    <h2>言葉にできないものを、そのまま投げる</h2>
+    <textarea id="msg" placeholder="例）この曲の、弦を弾いたあとに金属みたいな余韻がずっと残ってる音。あれが何なのか分からない。"></textarea>
+    <input id="yt" type="url" placeholder="YouTubeのURL（任意）">
+    <div class="attach">
+      <label for="file">📎 音源・画像・動画を添付</label>
+      <input id="file" type="file" accept="image/*,audio/*,video/mp4,video/quicktime" hidden>
+      <img id="thumb" alt=""><span id="fname"></span>
+    </div>
+    <button class="send" id="go">名前を探す</button>
+    <label class="replay"><input type="checkbox" id="replay"> 🎬 リプレイ（録画済みの実行を再生）</label>
+    <p class="hint">音でも画像でも言葉でも構いません。「名前が分からない」まま投げてください。</p>
+    <div class="ex">
+      <b>デモ用の入力例</b>
+      <button data-fill="肩の線が落ちてて、腰から下が直線的にすとんと落ちる感じの服が好き。色は全部くすんでて、派手な色は一切入ってない。この感じの名前が分からないから探せない。">服：くすんだ色・肩落ち・直線シルエット</button>
+      <button data-fill="弦を弾いた直後に、金属っぽいキラキラした余韻がずっと伸びて残る音。ギターじゃないと思うんだけど何なのか分からない。">音：弦のあとに金属的な余韻が残る</button>
+      <button data-fill="なんかいい感じのやつ">曖昧すぎる例（AIが聞き返す）</button>
+    </div>
+  </section>
+
+  <section>
+    <div class="panel">
+      <h2>エージェントの実行ログ</h2>
+      <div id="banner"></div>
+      <div id="empty" style="font-size:13px;color:var(--sub)">投げると、4つに分かれたエージェントが順に動きます。</div>
+      <ul class="trace" id="trace"></ul>
+      <div id="extra"></div>
+    </div>
+    <div class="cards" id="cards"></div>
+    <div id="auditBox"></div>
+  </section>
+</main>
+
+<script>
+const $ = (s) => document.querySelector(s);
+let media = null;
+
+$("#file").addEventListener("change", (e) => {
+  const f = e.target.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    media = { kind: "inline", mime: f.type, data: r.result.split(",")[1] };
+    if (f.type.startsWith("image")) { $("#thumb").src = r.result; $("#thumb").style.display = "block"; }
+    $("#fname").textContent = f.name;
+  };
+  r.readAsDataURL(f);
+});
+
+document.querySelectorAll(".ex button").forEach((b) =>
+  b.addEventListener("click", () => { $("#msg").value = b.dataset.fill; }));
+
+const steps = new Map();
+function upsertStep(o) {
+  let li = steps.get(o.id);
+  if (!li) {
+    li = document.createElement("li");
+    li.innerHTML = '<span class="dot"></span><div class="txt"><div class="lbl"></div><div class="det"></div></div><span class="ms"></span>';
+    $("#trace").appendChild(li); steps.set(o.id, li);
+  }
+  li.querySelector(".dot").className = "dot " + (o.status === "running" ? "run" : "done");
+  if (o.label) li.querySelector(".lbl").textContent = o.label;
+  if (o.ms) li.querySelector(".ms").textContent = (o.ms / 1000).toFixed(1) + "s";
+  if (o.detail) li.querySelector(".det").textContent = summarize(o.id, o.detail);
+}
+function summarize(id, d) {
+  if (id === "perceive")
+    return `領域: ${d.domain}\n起きていること:\n` + (d.phenomena || []).map((p) => "  ・" + p).join("\n")
+      + `\n質感: ${(d.qualities || []).join("、")}`
+      + ((d.assumed || []).length ? `\n推測で補った点: ${d.assumed.join("、")}` : "");
+  if (id.startsWith("name")) return `${d.count}個の候補: ` + (d.names || []).join("、");
+  if (id.startsWith("audit"))
+    return `監査: ${d.audit}` + ((d.rejected || []).length
+      ? `\n落とした名前: ` + d.rejected.map((r) => `${r.name}（${r.why}）`).join(" / ") : "");
+  return "";
+}
+
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+function renderCards(items) {
+  $("#cards").innerHTML = items.map((p, i) => `
+    <article class="card">
+      <div class="rank">${i + 1}　確信度 ${p.confidence ?? "-"}</div>
+      <h3>${esc(p.name)}</h3>
+      <div class="reading">${esc(p.reading || "")}</div>
+      <div class="oneline">${esc(p.one_line || "")}</div>
+      <div class="matches"><b>あなたの言葉のどこに対応するか</b>${esc(p.matches || "")}</div>
+      ${p.concern ? `<div class="concern">外している可能性：${esc(p.concern)}</div>` : ""}
+      <div class="terms">${(p.search_terms || []).map((t) =>
+        `<button onclick="window.open('https://www.google.com/search?q='+encodeURIComponent('${esc(t)}'),'_blank')">🔍 ${esc(t)}</button>`).join("")}</div>
+      <div class="links" id="lk${i}">行き先を探しています…</div>
+    </article>`).join("");
+}
+
+$("#go").addEventListener("click", async () => {
+  const message = $("#msg").value.trim();
+  const yt = $("#yt").value.trim();
+  if (yt) media = { kind: "youtube", url: yt };
+  if (!message && !media && !$("#replay").checked) return;
+
+  $("#go").disabled = true; $("#empty").style.display = "none";
+  $("#trace").innerHTML = ""; $("#extra").innerHTML = ""; $("#banner").innerHTML = ""; $("#cards").innerHTML = ""; $("#auditBox").innerHTML = "";
+  steps.clear();
+
+  try {
+    const res = await fetch("/api/run", {
+      method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ message, media, replay: $("#replay").checked }),
+    });
+    const reader = res.body.getReader(); const dec = new TextDecoder(); let buf = "";
+    while (true) {
+      const { done, value } = await reader.read(); if (done) break;
+      buf += dec.decode(value, { stream: true });
+      const chunks = buf.split("\n\n"); buf = chunks.pop();
+      for (const c of chunks) if (c.startsWith("data: ")) handle(JSON.parse(c.slice(6)));
+    }
+  } catch (e) {
+    $("#extra").insertAdjacentHTML("beforeend", `<div class="err">${esc(e.message)}</div>`);
+  }
+  $("#go").disabled = false;
+});
+
+function handle(e) {
+  if (e.type === "replay") {
+    $("#msg").value = e.message;
+    $("#banner").innerHTML =
+      '<div class="replaybar">🎬 これはライブ実行ではなく、<b>録画済みの実行結果の再生</b>です。</div>';
+  }
+  else if (e.type === "step") upsertStep(e);
+  else if (e.type === "decision")
+    $("#extra").insertAdjacentHTML("beforeend", `<div class="decision">🔁 ${esc(e.text)}</div>`);
+  else if (e.type === "ask")
+    $("#extra").insertAdjacentHTML("beforeend",
+      `<div class="ask"><b>エージェントからの確認</b><br>${esc(e.question)}<br><small>これが分からないまま進めると、まったく違う名前を出してしまうため止まりました。</small></div>`);
+  else if (e.type === "results") renderCards(e.items);
+  else if (e.type === "links") {
+    const box = document.getElementById("lk" + e.index); if (!box) return;
+    box.innerHTML = (e.links || []).length
+      ? e.links.map((l) => `<a class="l" href="${esc(l.url)}" target="_blank" rel="noopener"><span class="k">${esc(l.kind)}</span>${esc(l.title)}</a>`).join("")
+      : esc(e.note || "行き先が見つかりませんでした");
+  }
+  else if (e.type === "done")
+    $("#auditBox").insertAdjacentHTML("beforeend",
+      `<div class="audit">完了（${(e.ms / 1000).toFixed(1)}秒）。名前が分かれば、あとは自分で辿れます。</div>`);
+  else if (e.type === "error")
+    $("#extra").insertAdjacentHTML("beforeend", `<div class="err">${esc(e.message)}</div>`);
+}
+</script>
+</body>
+</html>

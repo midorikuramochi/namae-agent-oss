@@ -1,0 +1,13 @@
+{
+  "name": "namae-agent",
+  "version": "0.1.0",
+  "private": true,
+  "description": "An experimental agent that turns hard-to-describe perceptions into discoverable terminology.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "node --env-file-if-exists=.env server.mjs",
+    "test": "node --test",
+    "check": "node --check server.mjs && node --check src/agent.mjs && node --check src/gemini.mjs && node --check src/replay.mjs"
+  }
+}

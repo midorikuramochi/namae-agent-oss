@@ -1,0 +1,7 @@
+.env
+.env.*
+!.env.example
+node_modules/
+out/
+fixtures/last-run.local.json
+.DS_Store
